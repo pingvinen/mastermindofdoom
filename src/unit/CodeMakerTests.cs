@@ -19,6 +19,7 @@ namespace Pingvinen.MasterMindOfDoom
             maker = new CodeMaker(randoom);
         }
 
+        #region Generate code
         [Fact]
         public void GenerateCode_throwsIfAlreadyHasACode()
         {
@@ -34,5 +35,67 @@ namespace Pingvinen.MasterMindOfDoom
 
             A.CallTo(() => randoom.GetSequence(15, 0, 666)).MustHaveHappened();
         }
+        #endregion
+
+        #region Check guess
+        [Fact]
+        public void CheckGuess_throws_ifDifferentLength()
+        {
+            maker.Code = new Code(1, 2, 3, 4);
+            var guess = new Code(6);
+
+            Assert.Throws<ArgumentException>(() => maker.CheckGuess(guess));
+        }
+        
+        [Fact]
+        public void CheckGuess_noMatches_whenNothingMatches()
+        {
+            maker.Code = new Code(1, 2, 3, 4);
+            var guess = new Code(6, 6, 6, 6);
+
+            var actual = maker.CheckGuess(guess);
+            
+            Assert.Empty(actual.Matches);
+        }
+        
+        [Fact]
+        public void CheckGuess_oneValue_oneValueAndPos()
+        {
+            maker.Code = new Code(1, 2, 3, 4);
+            var guess = new Code(1, 4, 6, 6);
+
+            var actual = maker.CheckGuess(guess);
+
+            Assert.Equal(2, actual.Matches.Count);
+            Assert.Equal(1, actual.ValueOnlyMatches);
+            Assert.Equal(1, actual.ValueAndPositionMatches);
+        }
+        
+        [Fact]
+        public void CheckGuess_doNotOverrepresent_valueOnly()
+        {
+            maker.Code = new Code(1, 2, 3, 4);
+            var guess = new Code(4, 4, 4, 6);
+
+            var actual = maker.CheckGuess(guess);
+
+            Assert.Equal(1, actual.Matches.Count);
+            Assert.Equal(1, actual.ValueOnlyMatches);
+            Assert.Equal(0, actual.ValueAndPositionMatches);
+        }
+        
+        [Fact]
+        public void CheckGuess_fullMatch()
+        {
+            maker.Code = new Code(1, 1, 1, 1);
+            var guess = new Code(1, 1, 1, 1);
+
+            var actual = maker.CheckGuess(guess);
+
+            Assert.Equal(4, actual.Matches.Count);
+            Assert.Equal(0, actual.ValueOnlyMatches);
+            Assert.Equal(4, actual.ValueAndPositionMatches);
+        }
+        #endregion
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Pingvinen.MasterMindOfDoom
 {
@@ -36,6 +38,63 @@ namespace Pingvinen.MasterMindOfDoom
 
             Code = new Code();
             Code.Slots.AddRange(rng.GetSequence(length, 0, numberOfOptions));
+        }
+
+        /// <summary>
+        /// Check a guess against the actual code and provide feedback
+        /// </summary>
+        /// <param name="guess">The code to check</param>
+        /// <returns>Feedback on the guess</returns>
+        /// <exception cref="ArgumentException">Thrown if the guess has a different length than the code</exception>
+        public virtual Feedback CheckGuess(Code guess)
+        {
+            if (guess.Length != Code.Length)
+            {
+                throw new ArgumentException($"Actual code has {Code.Length} values but guess has {guess.Length}");
+            }
+            
+            var feedback = new Feedback();
+
+            var counts = GetCounts(Code);
+
+            for (var i = 0; i < guess.Length; i++)
+            {
+                var value = guess.Slots[i];
+                
+                if (value == Code.Slots[i])
+                {
+                    feedback.Add(Match.ValueAndPosition);
+                    counts[value] -= 1;
+                }
+                else if (counts.ContainsKey(value) && counts[value] > 0)
+                {
+                    feedback.Add(Match.ValueOnly);
+                    counts[value] -= 1;
+                }
+            }
+            
+            return feedback;
+        }
+
+        /// <summary>
+        /// Get a dictionary with the count of each distinct
+        /// value in the given code.
+        /// 
+        /// E.g.
+        /// The code 1,1,2,2,1
+        /// results in the dictionary
+        /// 1 = 3
+        /// 2 = 2
+        /// </summary>
+        /// <param name="c">The code to count</param>
+        private static Dictionary<int, int> GetCounts(Code c)
+        {
+            return c.Slots
+                .Distinct()
+                .ToDictionary(
+                    num => num,
+                    num => c.Slots.FindAll(x => x == num).Count
+                );
         }
     }
 }
