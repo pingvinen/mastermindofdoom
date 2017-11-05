@@ -96,6 +96,19 @@ namespace Pingvinen.MasterMindOfDoom
             Assert.Equal(0, actual.ValueOnlyMatches);
             Assert.Equal(4, actual.ValueAndPositionMatches);
         }
+        
+        [Fact]
+        public void CheckGuess_exactMatchesTakesPrecedence()
+        {
+            maker.Code = new Code(3, 3, 0, 3);
+            var guess = new Code(3, 3, 3, 3);
+
+            var actual = maker.CheckGuess(guess);
+
+            Assert.Equal(3, actual.Matches.Count);
+            Assert.Equal(0, actual.ValueOnlyMatches);
+            Assert.Equal(3, actual.ValueAndPositionMatches);
+        }
         #endregion
     }
 }

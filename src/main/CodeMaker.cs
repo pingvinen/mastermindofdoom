@@ -57,6 +57,10 @@ namespace Pingvinen.MasterMindOfDoom
 
             var counts = GetCounts(Code);
 
+            
+            //
+            // first count exact matches
+            //
             for (var i = 0; i < guess.Length; i++)
             {
                 var value = guess.Slots[i];
@@ -66,7 +70,16 @@ namespace Pingvinen.MasterMindOfDoom
                     feedback.Add(Match.ValueAndPosition);
                     counts[value] -= 1;
                 }
-                else if (counts.ContainsKey(value) && counts[value] > 0)
+            }
+            
+            //
+            // count "value" matches
+            //
+            for (var i = 0; i < guess.Length; i++)
+            {
+                var value = guess.Slots[i];
+                
+                if (value != Code.Slots[i] && counts.ContainsKey(value) && counts[value] > 0)
                 {
                     feedback.Add(Match.ValueOnly);
                     counts[value] -= 1;
